@@ -30,15 +30,22 @@ module "vpc" {
   }
 }
 
-resource "aws_instance" "blog" {
-  ami           = data.aws_ami.app_ami.id
-  instance_type = var.instance_type
-  subnet_id=module.vpc.public_subnets[0]
-  vpc_security_group_ids = [module.blog_sg.security_group_id]
+module "autoscaling" {
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "6.10.0"
+  # insert the 1 required variable here
 
-  tags = {
-    Name = "Learning Terraform"
-  }
+  name="blog"
+  min_size = 1
+  max_size = 2
+
+  vpc_zone_identifier = module.vpc.public_subnets
+  target_group_arns = module.alb.target_group_arns
+  security_groups = [module.blog_sg.security_group_id]
+
+  image_id = data.aws_ami.app_ami.id
+  instance_type = var.instance_type
+
 }
 
 module "alb" {
@@ -59,12 +66,6 @@ module "alb" {
       backend_protocol = "HTTP"
       backend_port     = 80
       target_type      = "instance"
-      targets = {
-        my_target = {
-          target_id = resource.aws_instance.blog.id
-          port = 80
-        }
-      }
     }
   ]
 
