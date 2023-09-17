@@ -6,10 +6,10 @@ variable "instance_type" {
 variable "ami_filter" {
   description = "filter for AMI"
 
-  types = object {
+  type = object ({
     name=string
     owners=string
-  }
+  })
 
   default={
     name="bitnami-tomcat-*-x86_64-hvm-ebs-nami"
@@ -20,10 +20,10 @@ variable "ami_filter" {
 variable "environment" {
   description = "blog environment"
 
-  types = object {
+  type = object ({
     name=string
     network_prefix=string
-  }
+  })
 
   default={
     name="dev"
