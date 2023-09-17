@@ -36,6 +36,7 @@ module "autoscaling" {
   # insert the 1 required variable here
 
   name="blog"
+  
   min_size = 1
   max_size = 2
 
