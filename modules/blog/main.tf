@@ -3,7 +3,7 @@ data "aws_ami" "app_ami" {
 
   filter {
     name   = "name"
-    values = ["bitnami-tomcat-*-x86_64-hvm-ebs-nami"]
+    values = [var.ami_filter.name]
   }
 
   filter {
@@ -11,7 +11,7 @@ data "aws_ami" "app_ami" {
     values = ["hvm"]
   }
 
-  owners = ["979382823631"] # Bitnami
+  owners = [var.ami_filter.owners] # Bitnami
 }
 
 module "vpc" {
@@ -37,8 +37,8 @@ module "autoscaling" {
 
   name="blog"
   
-  min_size = 1
-  max_size = 2
+  min_size = var.asg_min_size
+  max_size = var.asg_max_size
 
   vpc_zone_identifier = module.vpc.public_subnets
   target_group_arns = module.alb.target_group_arns
@@ -53,7 +53,7 @@ module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 8.0"
 
-  name = "blog-alb"
+  name = "${var.environment.name}-blog-alb"
 
   load_balancer_type = "application"
 
@@ -63,7 +63,7 @@ module "alb" {
 
   target_groups = [
     {
-      name_prefix      = "blog-"
+      name_prefix      = "${var.environment.name}-blog-"
       backend_protocol = "HTTP"
       backend_port     = 80
       target_type      = "instance"
@@ -86,7 +86,7 @@ module "alb" {
 module "blog_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.1.0"
-  name = "blog"
+  name = "${var.environment.name}-blog"
 
   vpc_id = module.vpc.vpc_id
 
